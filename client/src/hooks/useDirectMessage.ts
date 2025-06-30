@@ -111,12 +111,10 @@ const useDirectMessage = () => {
       // - Throw an error for an invalid chatUpdate type
       // NOTE: For new messages, the user will only receive the update if they are
       // currently subscribed to the chat room.
-      console.log(chatUpdate);
       try {
         if (chatUpdate.type === 'created') {
           setChats(prev => [...prev, chatUpdate.result]);
         } else if (chatUpdate.type === 'newMessage') {
-          console.log(chatUpdate.result.messages);
           if (selectedChat && chatUpdate.result._id === selectedChat._id)
             setSelectedChat(chatUpdate.result);
         } else {

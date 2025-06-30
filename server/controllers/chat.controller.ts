@@ -16,12 +16,9 @@ import {
   ChatIdRequest,
   GetChatByParticipantsRequest,
   AddMessagePayload,
-  Chat,
   ChatResponse,
 } from '../types/chat';
 import { FakeSOSocket } from '../types/socket';
-import { Message } from '../types/message';
-import { stat } from 'fs';
 
 /*
  * This controller handles chat-related routes.
@@ -129,22 +126,20 @@ const chatController = (socket: FakeSOSocket) => {
         throw new Error('Error when creating the message');
       }
 
-      const status: ChatResponse = await addMessageToChat(chatId.toString(), msgFromDb._id.toString());
+      const status: ChatResponse = await addMessageToChat(
+        chatId.toString(),
+        msgFromDb._id.toString(),
+      );
       if (status && 'error' in status) {
         throw new Error(status.error);
       }
 
       const populatedDoc = await populateDocument(status._id?.toString(), 'chat');
 
-      console.log(populatedDoc);
-
       socket.to(chatId.toString()).emit('chatUpdate', {
         result: populatedDoc,
         type: 'newMessage',
       });
-
-      console.log(populatedDoc);
-
       res.json(populatedDoc);
     } catch (error) {
       res.status(500).send(`Error when adding message: ${(error as Error).message}`);
@@ -176,7 +171,7 @@ const chatController = (socket: FakeSOSocket) => {
         throw new Error(chat.error);
       }
       const populatedDoc = await populateDocument(chat._id?.toString(), 'chat');
-      if(chat && !chat._id) throw new Error('Invalid chat id');
+      if (chat && !chat._id) throw new Error('Invalid chat id');
       socket.to(chatId.toString()).emit('chatUpdate', {
         result: chat,
         type: 'populatedDoc',
@@ -202,29 +197,32 @@ const chatController = (socket: FakeSOSocket) => {
     req: GetChatByParticipantsRequest,
     res: Response,
   ): Promise<void> => {
-    // TODO: Task 3 - Implement the getChatsByUserRoute function
-    console.log('in getChatsByUserRoute');
-    if (!req.params.username) throw new Error('Invalid request');
+    if (!req.params.username) {
+      res.status(400).send('Invalid request');
+      return;
+    }
+
     const { username } = req.params;
+
     try {
       const chats = await getChatsByParticipants([username]);
-      console.log('in get chat by participants');
-      // console.log(chats);
-      if (chats && 'error' in chats) {
-        throw new Error(chats.error as string);
+
+      if (!Array.isArray(chats)) {
+        throw new Error('Unexpected chats response');
       }
 
-      const populatedChats: ChatResponse[] = [];
+      // Run all populateDocument calls in parallel
+      const populatedChats = await Promise.all(
+        chats.map(async chat => {
+          const populated = await populateDocument(chat._id?.toString(), 'chat');
 
-      for (let chat of chats) {
-        const populatedChat = await populateDocument(chat._id?.toString(), 'chat');
+          if (!('participants' in populated && 'messages' in populated)) {
+            throw new Error('Failed populating chats');
+          }
 
-        if (!('participants' in populatedChat && 'messages' in populatedChat)) {
-          throw new Error('Failed populating chats');
-        }
-        populatedChats.push(populatedChat);
-      }
-      // console.log(populatedChats);
+          return populated;
+        }),
+      );
 
       res.status(200).json(populatedChats);
     } catch (err) {
@@ -244,7 +242,7 @@ const chatController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     // TODO: Task 3 - Implement the addParticipantToChatRoute function
-    if (!isAddParticipantRequestValid){
+    if (!isAddParticipantRequestValid) {
       res.status(400).send('Invalid request');
       return;
     }
@@ -265,7 +263,6 @@ const chatController = (socket: FakeSOSocket) => {
     conn.on('joinChat', (chatID: string) => {
       if (chatID) {
         conn.join(chatID);
-        console.log(`Socket ${conn.id} joined room ${chatID}`);
       }
     });
 
@@ -274,7 +271,6 @@ const chatController = (socket: FakeSOSocket) => {
     conn.on('leaveChat', (chatID: string | undefined) => {
       if (chatID) {
         conn.leave(chatID);
-        console.log(`Socket ${conn.id} left room ${chatID}`);
       }
     });
   });

@@ -65,13 +65,9 @@ const joinGame = async (gameID: string, playerID: string): Promise<GameInstance>
     gameID,
     playerID,
   });
-  console.log(res);
-  console.log(res.status);
-  // console.log(res.status !== 200);
   if (res.status !== 200) {
     throw new Error('Error while joining a game');
   }
-  // console.log('not error');
   return res.data;
 };
 

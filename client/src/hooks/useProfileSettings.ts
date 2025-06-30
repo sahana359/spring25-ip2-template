@@ -79,7 +79,7 @@ const useProfileSettings = () => {
       setErrorMessage('Please re-enter the new password');
       return false;
     }
-    if (newPassword != confirmNewPassword) {
+    if (newPassword !== confirmNewPassword) {
       setErrorMessage('Passwords do not match. Try again');
       return false;
     }
@@ -99,8 +99,7 @@ const useProfileSettings = () => {
     if (!validatePasswords()) return;
 
     try {
-      let user: User;
-      user = await resetPassword(username, newPassword);
+      const user: User = await resetPassword(username, newPassword);
       setSuccessMessage('Password reset successful!');
       setUserData(user);
     } catch (error) {
@@ -119,8 +118,7 @@ const useProfileSettings = () => {
     // then display success or error messages.
 
     try {
-      let user: User;
-      user = await updateBiography(username, newBio);
+      const user: User = await updateBiography(username, newBio);
       setSuccessMessage('Biography update successful!');
       setUserData(user);
     } catch (error) {

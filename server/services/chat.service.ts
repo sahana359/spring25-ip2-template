@@ -3,7 +3,7 @@ import ChatModel from '../models/chat.model';
 import MessageModel from '../models/messages.model';
 import UserModel from '../models/users.model';
 import { AddMessagePayload, Chat, ChatResponse, CreateChatPayload } from '../types/chat';
-import { Message, MessageResponse } from '../types/message';
+import { MessageResponse } from '../types/message';
 
 /**
  * Creates and saves a new chat document in the database, saving messages dynamically.
@@ -16,10 +16,9 @@ export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResp
   {
     try {
       const savedChat = await ChatModel.create(chatPayload);
-      if(!savedChat) throw new Error('Error fetching chats')
+      if (!savedChat) throw new Error('Error fetching chats');
       return savedChat;
     } catch (error) {
-      console.error('Failed to save chat:', error);
       return { error: 'Failed to save chat' };
     }
   };
@@ -34,7 +33,7 @@ export const createMessage = async (messageData: AddMessagePayload): Promise<Mes
   {
     try {
       const savedMessage = await MessageModel.create(messageData);
-      if(!savedMessage) throw new Error('Failed to save the message')
+      if (!savedMessage) throw new Error('Failed to save the message');
       return savedMessage;
     } catch (error) {
       return { error: 'Failed to save the message' };
@@ -47,10 +46,7 @@ export const createMessage = async (messageData: AddMessagePayload): Promise<Mes
  * @param messageId - The ID of the message to add to the chat.
  * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
  */
-export const addMessageToChat = async (
-  chatId: string,
-  messageId: string,
-): Promise<ChatResponse> =>
+export const addMessageToChat = async (chatId: string, messageId: string): Promise<ChatResponse> =>
   // TODO: Task 3 - Implement the addMessageToChat function. Refer to other service files for guidance.
   {
     try {
@@ -96,26 +92,26 @@ export const getChat = async (chatId: ObjectId): Promise<ChatResponse> =>
  * @returns {Promise<Chat[]>} A promise that resolves to an array of chats where the participants match.
  * If no chats are found or an error occurs, the promise resolves to an empty array.
  */
-export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> =>
-  // TODO: Task 3 - Implement the getChatsByParticipants function. Refer to other service files for guidance.
+export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> => {
+  try {
+    // Run all DB lookups in parallel
+    const participantDocs = await Promise.all(p.map(username => UserModel.findOne({ username })));
 
-  {
-    try {
-      const users = new Set();
-      for (const user of p) {
-        const participant = await UserModel.findOne({ username: user });
-        // console.log(participant)
-        if (participant) users.add(participant._id);
-      }
-      
+    // Extract non-null _id values
+    const users = new Set(
+      participantDocs
+        .filter(participant => participant) // remove nulls
+        .map(participant => participant!._id),
+    );
 
-      const chats = await ChatModel.find({ participants: { $all: Array.from(users) } });
-      if(!chats) throw new Error('Error fetching chats')
-      return chats;
-    } catch (error) {
-      return [];
-    }
-  };
+    const chats = await ChatModel.find({ participants: { $all: Array.from(users) } });
+    if (!chats) throw new Error('Error fetching chats');
+
+    return chats;
+  } catch (error) {
+    return [];
+  }
+};
 
 /**
  * Adds a participant to an existing chat.
@@ -124,10 +120,7 @@ export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> =>
  * @param userId - The ID of the user to add to the chat.
  * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
  */
-export const addParticipantToChat = async (
-  chatId: string,
-  userId: string,
-): Promise<ChatResponse> =>
+export const addParticipantToChat = async (chatId: string, userId: string): Promise<ChatResponse> =>
   // TODO: Task 3 - Implement the addParticipantToChat function. Refer to other service files for guidance.
   {
     try {

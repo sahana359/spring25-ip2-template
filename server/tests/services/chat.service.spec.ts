@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import mongoose from 'mongoose';
+import mongoose, { Query } from 'mongoose';
 
 import ChatModel from '../../models/chat.model';
 import MessageModel from '../../models/messages.model';
@@ -8,12 +8,12 @@ import {
   saveChat,
   createMessage,
   addMessageToChat,
-  getChat,
   addParticipantToChat,
   getChatsByParticipants,
 } from '../../services/chat.service';
 import { Chat, CreateChatPayload } from '../../types/chat';
 import { Message } from '../../types/message';
+import { User } from '../../types/user';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
 
@@ -50,7 +50,6 @@ describe('Chat service', () => {
 
       // 4) Call the service
       const result = await saveChat(mockChatPayload);
-      console.log(result);
       // 5) Verify no error
       if ('error' in result) {
         throw new Error(`Expected a Chat, got error: ${result.error}`);
@@ -63,29 +62,28 @@ describe('Chat service', () => {
       expect(result.messages.length).toEqual(0);
     });
     it('should handle empty participants array gracefully', async () => {
-  const payload: CreateChatPayload = {
-    participants: [],
-    messages: [],
-  };
+      const payload: CreateChatPayload = {
+        participants: [],
+        messages: [],
+      };
 
-  const savedChatMock = {
-    _id: new mongoose.Types.ObjectId(),
-    participants: [],
-    messages: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+      const savedChatMock = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: [],
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-  mockingoose(ChatModel).toReturn(savedChatMock, 'create');
+      mockingoose(ChatModel).toReturn(savedChatMock, 'create');
 
-  const result = await saveChat(payload);
+      const result = await saveChat(payload);
 
-  if ('error' in result) throw new Error(result.error);
+      if ('error' in result) throw new Error(result.error);
 
-  expect(result.participants).toHaveLength(0);
-  expect(result.messages).toHaveLength(0);
-});
-
+      expect(result.participants).toHaveLength(0);
+      expect(result.messages).toHaveLength(0);
+    });
   });
 
   // ----------------------------------------------------------------------------
@@ -123,7 +121,6 @@ describe('Chat service', () => {
         type: 'direct',
       });
     });
-    
   });
 
   // ----------------------------------------------------------------------------
@@ -213,8 +210,8 @@ describe('Chat service', () => {
           updatedAt: new Date(),
         },
       ];
-
-      mockingoose(UserModel).toReturn((query: any) => {
+      // eslint:@typescript-eslint/no-explicit-any: "off"
+      mockingoose(UserModel).toReturn((query: Query<User, User>) => {
         const { username } = query.getQuery();
         if (username === 'user1') return mockUser1;
         if (username === 'user2') return mockUser2;
@@ -261,7 +258,6 @@ describe('Chat service', () => {
       mockingoose(ChatModel).toReturn([mockChats[0], mockChats[1]], 'find');
 
       const result = await getChatsByParticipants(['user1']);
-      console.log(result);
       expect(result).toHaveLength(2);
       expect(result).toMatchObject([mockChats[0], mockChats[1]]);
     });

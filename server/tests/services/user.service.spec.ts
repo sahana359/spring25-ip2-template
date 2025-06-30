@@ -94,7 +94,7 @@ describe('getUsersList', () => {
   it('should return an empty array if no users are found', async () => {
     mockingoose(UserModel).toReturn([], 'find');
 
-    const retrievedUsers = await getUsersList() as SafeUser[];
+    const retrievedUsers = (await getUsersList()) as SafeUser[];
 
     expect(Array.isArray(retrievedUsers)).toBe(true);
     expect(retrievedUsers.length).toBe(0);
@@ -118,7 +118,7 @@ describe('getUsersList', () => {
 
     mockingoose(UserModel).toReturn([safeUser, anotherUser], 'find');
 
-    const users = await getUsersList() as SafeUser[];
+    const users = (await getUsersList()) as SafeUser[];
 
     expect(Array.isArray(users)).toBe(true);
     expect(users[0].username).toEqual(safeUser.username);

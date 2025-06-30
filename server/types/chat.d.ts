@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Request } from 'express';
 import { Message } from './message';
-import { User } from './user';
 
 /**
  * Extends the raw Message with an extra `user` field for
