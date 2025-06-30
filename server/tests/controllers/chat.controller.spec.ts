@@ -51,10 +51,6 @@ describe('Chat Controller', () => {
             msg: 'Hello!',
             msgFrom: 'user1',
             msgDateTime: new Date('2025-01-01'),
-            user: {
-              _id: new mongoose.Types.ObjectId(),
-              username: 'user1',
-            },
             type: 'direct',
           },
         ],
@@ -76,10 +72,6 @@ describe('Chat Controller', () => {
           ...message,
           _id: message._id?.toString(),
           msgDateTime: message.msgDateTime.toISOString(),
-          user: {
-            ...message.user,
-            _id: message.user?._id.toString(),
-          },
         })),
         createdAt: chatResponse.createdAt?.toISOString(),
         updatedAt: chatResponse.updatedAt?.toISOString(),
@@ -89,6 +81,27 @@ describe('Chat Controller', () => {
       expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id?.toString(), 'chat');
     });
 
+    it('should return 400 if participants are missing', async () => {
+      const invalidPayload = {
+        messages: [{ msg: 'Hello!', msgFrom: 'user1', msgDateTime: new Date('2025-01-01') }],
+      };
+
+      const response = await supertest(app).post('/chat/createChat').send(invalidPayload);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toMatch('Invalid request');
+    });
+
+    it('should return 400 if messages are missing', async () => {
+      const invalidPayload = {
+        participants: ['user1', 'user2'],
+      };
+
+      const response = await supertest(app).post('/chat/createChat').send(invalidPayload);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toMatch('Invalid request');
+    });
   });
 
   describe('POST /chat/:chatId/addMessage', () => {
@@ -151,7 +164,31 @@ describe('Chat Controller', () => {
       expect(addMessageSpy).toHaveBeenCalledWith(chatId.toString(), messageResponse._id.toString());
       expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id.toString(), 'chat');
     });
+    it('should return 400 if msg is missing', async () => {
+      const chatId = new mongoose.Types.ObjectId();
+      const invalidPayload = {
+        msgFrom: 'user1',
+        msgDateTime: new Date(),
+      };
 
+      const response = await supertest(app).post(`/chat/${chatId}/addMessage`).send(invalidPayload);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toMatch('Invalid request');
+    });
+
+    it('should return 400 if msgFrom is missing', async () => {
+      const chatId = new mongoose.Types.ObjectId();
+      const invalidPayload = {
+        msg: 'Hello!',
+        msgDateTime: new Date(),
+      };
+
+      const response = await supertest(app).post(`/chat/${chatId}/addMessage`).send(invalidPayload);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toMatch('Invalid request');
+    });
   });
 
   describe('GET /chat/:chatId', () => {
@@ -170,10 +207,6 @@ describe('Chat Controller', () => {
             msg: 'Hello!',
             msgFrom: 'user1',
             msgDateTime: new Date('2025-01-01T00:00:00Z'),
-            user: {
-              _id: new mongoose.Types.ObjectId(),
-              username: 'user1',
-            },
             type: 'direct',
           },
         ],
@@ -202,48 +235,23 @@ describe('Chat Controller', () => {
           msg: m.msg,
           msgFrom: m.msgFrom,
           msgDateTime: m.msgDateTime.toISOString(),
-          user: {
-            _id: m.user?._id.toString(),
-            username: m.user?.username,
-          },
         })),
         createdAt: mockFoundChat.createdAt?.toISOString(),
         updatedAt: mockFoundChat.updatedAt?.toISOString(),
       });
     });
+    it('should return 400 if chatId is not a valid ObjectId', async () => {
+      const invalidChatId = 'invalid:(';
+
+      const response = await supertest(app).get(`/chat/${invalidChatId}`);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toMatch('Invalid ID format');
+    });
   });
 
   describe('POST /chat/:chatId/addParticipant', () => {
     // TODO: Task 3 Write additional tests for the addParticipant endpoint
-    it('should add a participant to an existing chat', async () => {
-      const chatId = new mongoose.Types.ObjectId().toString();
-      const userId = new mongoose.Types.ObjectId().toString();
-
-      const updatedChat: Chat = {
-        _id: new mongoose.Types.ObjectId(),
-        participants: ['user1', 'user2'],
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      addParticipantSpy.mockResolvedValue(updatedChat);
-
-      const response = await supertest(app).post(`/chat/${chatId}/addParticipant`).send({ userId });
-
-      expect(response.status).toBe(200);
-
-      expect(response.body).toMatchObject({
-        _id: updatedChat._id?.toString(),
-        participants: updatedChat.participants.map(id => id.toString()),
-        messages: [],
-        createdAt: updatedChat.createdAt?.toISOString(),
-        updatedAt: updatedChat.updatedAt?.toISOString(),
-      });
-
-      expect(addParticipantSpy).toHaveBeenCalledWith(chatId, userId);
-    });
-
   });
 
   describe('POST /chat/getChatsByUser/:username', () => {

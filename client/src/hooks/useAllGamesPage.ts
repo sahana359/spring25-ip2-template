@@ -21,11 +21,22 @@ const useAllGamesPage = () => {
 
   const fetchGames = async () => {
     // TODO: Task 2 - Fetch and update the list of available games state
+    try {
+      const games = await getGames(undefined, undefined);
+      setAvailableGames(games);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+    }
   };
 
   const handleCreateGame = async (gameType: GameType) => {
     // TODO: Task 2 - Create a new game with the provided type
-    fetchGames(); // Refresh the list after creating a game
+    try {
+      await createGame(gameType);
+    } catch (error) {
+      console.error('Error when creating a game: ', error);
+    }
+    await fetchGames(); // Refresh the list after creating a game
   };
 
   const handleJoin = (gameID: string) => {
@@ -33,13 +44,19 @@ const useAllGamesPage = () => {
   };
 
   // TODO: Task 2 - Implement the `useEffect` hook to fetch the list of available games on component mount
+  useEffect(() => {
+    fetchGames();
+  }, []);
 
   const handleToggleModal = () => {
     // TODO: Task 2 - Toggle the visibility of the game creation modal
+    setIsModalOpen(!isModalOpen);
   };
 
   const handleSelectGameType = (gameType: GameType) => {
     // TODO: Task 2 - Create a new game with the selected game type and toggle the modal
+    handleCreateGame(gameType);
+    handleToggleModal();
   };
 
   return {

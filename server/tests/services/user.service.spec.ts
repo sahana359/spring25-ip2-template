@@ -91,6 +91,41 @@ describe('getUsersList', () => {
   });
 
   // TODO: Task 1 - Add more tests for getUsersList
+  it('should return an empty array if no users are found', async () => {
+    mockingoose(UserModel).toReturn([], 'find');
+
+    const retrievedUsers = await getUsersList() as SafeUser[];
+
+    expect(Array.isArray(retrievedUsers)).toBe(true);
+    expect(retrievedUsers.length).toBe(0);
+  });
+
+  it('should return an error if there is a database error', async () => {
+    mockingoose(UserModel).toReturn(new Error('Database error'), 'find');
+
+    const result = await getUsersList();
+
+    expect('error' in result).toBe(true);
+    expect((result as { error: string }).error).toContain('Error occurred when finding user');
+  });
+
+  it('should return multiple users', async () => {
+    const anotherUser: SafeUser = {
+      username: 'anotherUser',
+      dateJoined: new Date(),
+      biography: 'Another bio',
+    };
+
+    mockingoose(UserModel).toReturn([safeUser, anotherUser], 'find');
+
+    const users = await getUsersList() as SafeUser[];
+
+    expect(Array.isArray(users)).toBe(true);
+    expect(users[0].username).toEqual(safeUser.username);
+    expect(users[0].dateJoined).toEqual(safeUser.dateJoined);
+    expect(users[1].username).toEqual(anotherUser.username);
+    expect(users[1].dateJoined).toEqual(anotherUser.dateJoined);
+  });
 });
 
 describe('loginUser', () => {

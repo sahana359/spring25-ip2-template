@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
 import useLoginContext from './useLoginContext';
 import { createUser, loginUser } from '../services/userService';
-import { User } from '../types';
+import { User, UserCredentials } from '../types';
 
 /**
  * Custom hook to manage authentication logic, including handling input changes,
@@ -34,6 +34,7 @@ const useAuth = (authType: 'login' | 'signup') => {
    */
   const togglePasswordVisibility = () => {
     // TODO - Task 1: Toggle password visibility
+    setShowPassword(!showPassword);
   };
 
   /**
@@ -47,6 +48,14 @@ const useAuth = (authType: 'login' | 'signup') => {
     field: 'username' | 'password' | 'confirmPassword',
   ) => {
     // TODO - Task 1: Handle input changes for the fields
+    const inputValue = e.target.value;
+    if (field === 'username') {
+      setUsername(inputValue);
+    } else if (field === 'password') {
+      setPassword(inputValue);
+    } else if (field === 'confirmPassword') {
+      setPasswordConfirmation(inputValue);
+    }
   };
 
   /**
@@ -58,6 +67,20 @@ const useAuth = (authType: 'login' | 'signup') => {
   const validateInputs = (): boolean => {
     // TODO - Task 1: Validate inputs for login and signup forms
     // Display any errors to the user
+    if (!username) {
+      setErr('Please enter username');
+      return false;
+    }
+    if (!password) {
+      setErr('Please enter password');
+      return false;
+    }
+    if (authType === 'signup' && !passwordConfirmation) {
+      setErr('Password donot match.');
+      return false;
+    }
+    setErr('');
+    return true;
   };
 
   /**
@@ -70,18 +93,24 @@ const useAuth = (authType: 'login' | 'signup') => {
     event.preventDefault();
 
     // TODO - Task 1: Validate inputs
-
+    if (!validateInputs()) return;
     let user: User;
+    const userCreds: UserCredentials = { username, password };
 
     try {
       // TODO - Task 1: Handle the form submission, calling appropriate API routes
       // based on the auth type
-
+      if (authType === 'login') {
+        user = await loginUser(userCreds);
+      } else {
+        user = await createUser(userCreds);
+      }
       // Redirect to home page on successful login/signup
       setUser(user);
       navigate('/home');
     } catch (error) {
       // TODO - Task 1: Display error message
+      setErr('Authentication Failed. Try again.');
     }
   };
 

@@ -9,7 +9,7 @@ const GAMES_API_URL = `${process.env.REACT_APP_SERVER_URL}/games`;
  * @returns A promise resolving to the created game instance.
  * @throws Error if there is an issue while creating the game.
  */
-const createGame = async (gameType: GameType): Promise<GameInstance> => {
+const createGame = async (gameType: GameType): Promise<string> => {
   const res = await api.post(`${GAMES_API_URL}/create`, {
     gameType,
   });
@@ -65,11 +65,13 @@ const joinGame = async (gameID: string, playerID: string): Promise<GameInstance>
     gameID,
     playerID,
   });
-
+  console.log(res);
+  console.log(res.status);
+  // console.log(res.status !== 200);
   if (res.status !== 200) {
     throw new Error('Error while joining a game');
   }
-
+  // console.log('not error');
   return res.data;
 };
 

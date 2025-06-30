@@ -185,7 +185,7 @@ export interface MessageUpdatePayload {
  * Interface representing the payload for a chat update event.
  */
 export interface ChatUpdatePayload {
-  chat: Chat;
+  result: Chat;
   type: 'created' | 'newMessage';
 }
 
@@ -288,7 +288,7 @@ export interface MessageInChat extends Message {
  */
 export interface Chat {
   _id?: string;
-  participants: string[]; // array of user IDs
+  participants: User[]; // array of user IDs
   messages: MessageInChat[]; // array of messages, each with user details
   createdAt?: Date; // set by Mongoose if timestamps: true
   updatedAt?: Date; // set by Mongoose if timestamps: true

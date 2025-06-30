@@ -127,6 +127,15 @@ const userController = (socket: FakeSOSocket) => {
    */
   const getUsers = async (_: Request, res: Response): Promise<void> => {
     // TODO: Task 1 - Implement the getUsers endpoint
+    try {
+      const users = await getUsersList();
+      if ('error' in users) {
+        throw Error(users.error);
+      }
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).send(`Error while fetching all the users, ${error}`);
+    }
   };
 
   /**
@@ -189,6 +198,15 @@ const userController = (socket: FakeSOSocket) => {
   const updateBiography = async (req: UpdateBiographyRequest, res: Response): Promise<void> => {
     try {
       // TODO: Task 1 - Implement the updateBiography function, including request validation
+      const { username } = req.body;
+      const { biography } = req.body;
+
+      if (!username || typeof biography !== 'string') {
+        res.status(400).send('Invalid user body');
+        return;
+      }
+
+      const updatedUser = await updateUser(username, { biography });
 
       // Emit socket event for real-time updates
       socket.emit('userUpdate', {
@@ -197,8 +215,13 @@ const userController = (socket: FakeSOSocket) => {
       });
 
       // TODO: Task 1 - Return the updated user object
+      if ('error' in updatedUser) {
+        throw Error(updatedUser.error);
+      }
+      res.status(200).json(updatedUser);
     } catch (error) {
       // TODO: Task 1 - Handle errors appropriately
+      res.status(500).send(`Error when updating user biography: ${error}`);
     }
   };
 
@@ -211,6 +234,8 @@ const userController = (socket: FakeSOSocket) => {
 
   // TODO: Task 1- Add a route for updating a user's biography
   // TODO: Task 1 - Add a route for getting all users
+  router.patch('/updateBiography', updateBiography);
+  router.get('/getUsers', getUsers);
 
   return router;
 };

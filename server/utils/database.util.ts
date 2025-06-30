@@ -34,7 +34,7 @@ export const populateDocument = async (
     }
 
     let result = null;
-
+    let chatDoc = null;
     if (type === 'question') {
       result = await QuestionModel.findOne({ _id: id }).populate([
         {
@@ -53,9 +53,9 @@ export const populateDocument = async (
         { path: 'comments', model: CommentModel },
       ]);
     } else if (type === 'chat') {
-      const chatDoc = await ChatModel.findOne({ _id: id }).populate([
-        { path: 'messages', model: MessageModel },
-      ]);
+      chatDoc = await ChatModel.findOne({ _id: id })
+        .populate([{ path: 'participants', model: UserModel }])
+        .populate([{ path: 'messages', model: MessageModel }]);
 
       if (!chatDoc) {
         throw new Error('Chat not found');

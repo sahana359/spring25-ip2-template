@@ -96,6 +96,7 @@ const resetPassword = async (username: string, newPassword: string): Promise<Use
     username,
     password: newPassword,
   });
+
   if (res.status !== 200) {
     throw new Error('Error when resetting password');
   }

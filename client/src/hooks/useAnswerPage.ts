@@ -76,7 +76,7 @@ const useAnswerPage = () => {
     };
 
     // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
+    fetchData().catch(e => console.error(e));
   }, [questionID, user.username]);
 
   useEffect(() => {

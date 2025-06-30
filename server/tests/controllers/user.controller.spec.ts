@@ -288,6 +288,24 @@ describe('Test userController', () => {
   });
 
   describe('GET /getUsers', () => {
+    const mockAnotherUser: User = {
+      _id: new mongoose.Types.ObjectId(),
+      username: 'user2',
+      password: 'password2',
+      dateJoined: new Date('2024-12-04'),
+    };
+    const mockAnotherSafeUser: SafeUser = {
+      _id: mockAnotherUser._id,
+      username: 'user2',
+      dateJoined: new Date('2024-12-04'),
+    };
+
+    const mockAnotherUserJSONResponse = {
+      _id: mockAnotherUser._id?.toString(),
+      username: 'user2',
+      dateJoined: new Date('2024-12-04').toISOString(),
+    };
+
     it('should return the users from the database', async () => {
       getUsersListSpy.mockResolvedValueOnce([mockSafeUser]);
 
@@ -299,6 +317,24 @@ describe('Test userController', () => {
     });
 
     // TODO: Task 1 - Add more tests
+    it('should return 500 if database error while fetching users', async () => {
+      getUsersListSpy.mockResolvedValueOnce({ error: 'Error finding user' });
+
+      const response = await supertest(app).get(`/user/getUsers`);
+
+      expect(response.status).toBe(500);
+    });
+
+    it('should return multiple users from the database', async () => {
+      getUsersListSpy.mockResolvedValueOnce([mockSafeUser, mockAnotherSafeUser]);
+
+      const response = await supertest(app).get(`/user/getUsers`);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toEqual([mockUserJSONResponse, mockAnotherUserJSONResponse]);
+      expect(getUsersListSpy).toHaveBeenCalled();
+    });
   });
 
   describe('DELETE /deleteUser', () => {
@@ -349,5 +385,36 @@ describe('Test userController', () => {
     });
 
     // TODO: Task 1 - Add more tests
+
+    it('should return 400 if username is missing', async () => {
+      const mockReqBody = { biography: 'New bio' };
+
+      const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toEqual('Invalid user body');
+    });
+
+    it('should return 400 if biography is missing', async () => {
+      const mockReqBody = { username: mockUser.username };
+
+      const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toEqual('Invalid user body');
+    });
+
+    it('should return 500 if database error occurs while updating biography', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        biography: 'This is my new bio',
+      };
+
+      updatedUserSpy.mockResolvedValueOnce({ error: 'Error updating biography' });
+
+      const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+      expect(response.status).toBe(500);
+    });
   });
 });
