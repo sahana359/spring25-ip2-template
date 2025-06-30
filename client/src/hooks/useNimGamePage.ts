@@ -25,7 +25,7 @@ const useNimGamePage = (gameState: GameInstance) => {
     socket.emit('makeMove', {
       gameID: gameState.gameID,
       move: {
-        playerID: user.username,
+        playerID: user._id,
         gameID: gameState.gameID,
         move: {
           numObjects: move, // `move` is your number state variable

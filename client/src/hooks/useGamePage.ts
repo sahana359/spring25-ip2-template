@@ -36,6 +36,7 @@ const useGamePage = () => {
         setGameState(leaveGameState);
         setJoinedGameID(null);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Error leaving game:', err);
       }
     }
@@ -56,6 +57,7 @@ const useGamePage = () => {
         setGameState(joinGameState);
         setJoinedGameID(id);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Error joining game:', err);
       }
     };
@@ -87,7 +89,7 @@ const useGamePage = () => {
       socket?.off('gameUpdate', handleGameUpdate);
       socket?.off('gameError', handleGameError);
     };
-  }, [gameID, socket, user.username, gameState]);
+  }, [gameID, socket, user.username, gameState, joinedGameID, user._id]);
 
   return {
     gameState,

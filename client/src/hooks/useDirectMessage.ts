@@ -40,6 +40,7 @@ const useDirectMessage = () => {
         setSelectedChat(updatedChat);
         setNewMessage('');
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
       }
     }
@@ -60,6 +61,7 @@ const useDirectMessage = () => {
         setNewMessage('');
         handleJoinChat(chatID);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
       }
     }
@@ -85,6 +87,7 @@ const useDirectMessage = () => {
         handleJoinChat(fetchedChat._id);
         setShowCreatePanel(false);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
       }
     }
@@ -98,6 +101,7 @@ const useDirectMessage = () => {
         if (!fetchedChats) throw new Error('Error when fetching the chats');
         setChats(fetchedChats);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
       }
     };
@@ -121,6 +125,7 @@ const useDirectMessage = () => {
           throw new Error('Error when updating chat');
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
       }
     };
@@ -139,7 +144,7 @@ const useDirectMessage = () => {
       }
       socket?.off('chatUpdate', handleChatUpdate);
     };
-  }, [user.username, socket, selectedChat?._id]);
+  }, [user.username, socket, selectedChat]);
 
   return {
     selectedChat,

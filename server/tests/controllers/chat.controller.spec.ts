@@ -17,7 +17,6 @@ const populateDocumentSpy = jest.spyOn(databaseUtil, 'populateDocument');
 const getChatsByParticipantsSpy = jest.spyOn(chatService, 'getChatsByParticipants');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const mockingoose = require('mockingoose');
 
 /**
  * Sample test suite for the /chat endpoints

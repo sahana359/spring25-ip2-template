@@ -25,6 +25,7 @@ const useAllGamesPage = () => {
       const games = await getGames(undefined, undefined);
       setAvailableGames(games);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching games:', error);
     }
   };
@@ -34,6 +35,7 @@ const useAllGamesPage = () => {
     try {
       await createGame(gameType);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error when creating a game: ', error);
     }
     await fetchGames(); // Refresh the list after creating a game
