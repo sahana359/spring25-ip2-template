@@ -48,6 +48,7 @@ const useProfileSettings = () => {
         const data = await getUserByUsername(username);
         setUserData(data);
       } catch (error) {
+        setSuccessMessage(null);
         setErrorMessage('Error fetching user profile');
         setUserData(null);
       } finally {
@@ -72,18 +73,21 @@ const useProfileSettings = () => {
   const validatePasswords = () => {
     // TODO: Task 1 - Validate the reset password fields and return whether they match
     if (!newPassword) {
+      setSuccessMessage(null);
       setErrorMessage('Please enter the new password');
       return false;
     }
     if (!confirmNewPassword) {
+      setSuccessMessage(null);
       setErrorMessage('Please re-enter the new password');
       return false;
     }
     if (newPassword !== confirmNewPassword) {
+      setSuccessMessage(null);
       setErrorMessage('Passwords do not match. Try again');
       return false;
     }
-    setErrorMessage('');
+    setErrorMessage(null);
     return true;
   };
 
@@ -100,9 +104,11 @@ const useProfileSettings = () => {
 
     try {
       const user: User = await resetPassword(username, newPassword);
+      setErrorMessage(null);
       setSuccessMessage('Password reset successful!');
       setUserData(user);
     } catch (error) {
+      setSuccessMessage(null);
       setErrorMessage(`Password reset failed! ${error}`);
     } finally {
       setNewPassword('');
@@ -119,9 +125,11 @@ const useProfileSettings = () => {
 
     try {
       const user: User = await updateBiography(username, newBio);
+      setErrorMessage(null);
       setSuccessMessage('Biography update successful!');
       setUserData(user);
     } catch (error) {
+      setSuccessMessage(null);
       setErrorMessage(`Biography updated Failed ${error}`);
     } finally {
       setEditBioMode(false);
@@ -142,11 +150,13 @@ const useProfileSettings = () => {
 
       try {
         await deleteUser(username);
+        setErrorMessage(null);
         setSuccessMessage('User deleted successfuly');
         // Navigate home after successful deletion
         navigate('/');
       } catch (error) {
         // Error handling
+        setSuccessMessage(null);
         setErrorMessage('User deletion failed');
       } finally {
         // Hide the confirmation modal after completion

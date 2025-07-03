@@ -50,7 +50,9 @@ export const addMessageToChat = async (chatId: string, messageId: string): Promi
   // TODO: Task 3 - Implement the addMessageToChat function. Refer to other service files for guidance.
   {
     try {
-      if (!messageId) {
+      const msg = await MessageModel.findById(messageId);
+
+      if (!msg) {
         throw new Error('Invalid message Id');
       }
       const res = await ChatModel.findOneAndUpdate(
@@ -124,12 +126,28 @@ export const addParticipantToChat = async (chatId: string, userId: string): Prom
   // TODO: Task 3 - Implement the addParticipantToChat function. Refer to other service files for guidance.
   {
     try {
-      const chat = await ChatModel.findByIdAndUpdate(chatId, { $push: { participants: userId } });
-      if (!chat) {
-        throw new Error('Error when adding a participant to an existing chat');
+      const user = await UserModel.findById(userId);
+
+      if (!user) throw new Error("User doesn't exist");
+
+      const chat = await ChatModel.findById(chatId);
+
+      if (!chat) throw new Error('Chat not found');
+
+      if (chat.participants.includes(userId)) throw new Error('Participant already in the chat.');
+
+      const updatedChat = await ChatModel.findByIdAndUpdate(chatId, {
+        $push: { participants: userId },
+      });
+
+      if (!updatedChat) {
+        throw new Error('Failed to add participant.');
       }
-      return chat;
+
+      return updatedChat;
     } catch (error) {
-      return { error: 'Error when adding a participant to an existing chat' };
+      return {
+        error: `Error adding a participant to an existing chat : ${(error as Error).message}`,
+      };
     }
   };

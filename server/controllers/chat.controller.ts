@@ -44,7 +44,7 @@ const chatController = (socket: FakeSOSocket) => {
    * @returns `true` if the body contains valid message fields; otherwise, `false`.
    */
   const isAddMessageRequestValid = (req: AddMessageRequestToChat): boolean =>
-    !!req.body.msg && !!req.body.msgFrom;
+    !!ObjectId.isValid(req.params.chatId) && !!req.body.msg && !!req.body.msgFrom;
   // TODO: Task 3 - Implement the isAddMessageRequestValid function.
 
   /**
@@ -53,7 +53,7 @@ const chatController = (socket: FakeSOSocket) => {
    * @returns `true` if the body contains valid participant fields; otherwise, `false`.
    */
   const isAddParticipantRequestValid = (req: AddParticipantRequest): boolean =>
-    !!req.body.participant && !!req.params.chatId;
+    !!req.body.participant && !!ObjectId.isValid(req.params.chatId);
   // TODO: Task 3 - Implement the isAddParticipantRequestValid function.
 
   /**
@@ -171,6 +171,8 @@ const chatController = (socket: FakeSOSocket) => {
         throw new Error(chat.error);
       }
       const populatedDoc = await populateDocument(chat._id?.toString(), 'chat');
+
+      if (populatedDoc && 'error' in populatedDoc) throw new Error(populatedDoc.error);
       if (chat && !chat._id) throw new Error('Invalid chat id');
       socket.to(chatId.toString()).emit('chatUpdate', {
         result: chat,
@@ -242,7 +244,7 @@ const chatController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     // TODO: Task 3 - Implement the addParticipantToChatRoute function
-    if (!isAddParticipantRequestValid) {
+    if (!isAddParticipantRequestValid(req)) {
       res.status(400).send('Invalid request');
       return;
     }
@@ -281,7 +283,7 @@ const chatController = (socket: FakeSOSocket) => {
   router.get('/:chatId', getChatRoute);
   router.post('/:chatId/addMessage', addMessageToChatRoute);
   router.post('/createChat', createChatRoute);
-  router.post('/addParticipant', addParticipantToChatRoute);
+  router.post('/:chatId/addParticipant', addParticipantToChatRoute);
 
   return router;
 };

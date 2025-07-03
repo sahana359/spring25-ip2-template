@@ -21,11 +21,11 @@ const useNimGamePage = (gameState: GameInstance) => {
 
   const handleMakeMove = async () => {
     // TODO: Task 2 - Emit a socket event to make a move in the Nim game
-    if (!user || !user._id || !gameState) return;
+    if (!user || !user.username || !gameState) return;
     socket.emit('makeMove', {
       gameID: gameState.gameID,
       move: {
-        playerID: user._id,
+        playerID: user.username,
         gameID: gameState.gameID,
         move: {
           numObjects: move, // `move` is your number state variable

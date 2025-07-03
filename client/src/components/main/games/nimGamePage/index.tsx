@@ -17,10 +17,10 @@ const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
   const [winner, setWinner] = useState('No winner');
 
   useEffect(() => {
-    if (!user?._id) return;
+    if (!user?.username) return;
     setIsUserTurn(
-      (user._id === gameState.state.player1 && gameState.state.moves.length % 2 === 0) ||
-        (user._id === gameState.state.player2 && gameState.state.moves.length % 2 === 1),
+      (user.username === gameState.state.player1 && gameState.state.moves.length % 2 === 0) ||
+        (user.username === gameState.state.player2 && gameState.state.moves.length % 2 === 1),
     );
     setWinner(
       gameState.state.winners && gameState.state.winners.length > 0
@@ -56,6 +56,15 @@ const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
         </p>
         <p>
           <strong>Player 2:</strong> {gameState.state.player2 ?? 'Waiting...'}
+        </p>
+        <p>
+          <strong>Current Player to Move:</strong>{' '}
+          {(() => {
+            if (gameState.state.status === 'OVER') return '';
+            if (isUserTurn) return user.username;
+            if (gameState.state.player1 !== user.username) return gameState.state.player1;
+            return gameState.state.player2;
+          })()}
         </p>
         <p>
           <strong>Status:</strong> {gameState.state.status}

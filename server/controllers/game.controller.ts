@@ -145,6 +145,11 @@ const gameController = (socket: FakeSOSocket) => {
       game.applyMove(move);
       socket.to(gameID).emit('gameUpdate', { gameState: game.toModel() });
 
+      socket.to(gameID).emit('gameError', {
+        player: move.playerID,
+        error: null,
+      });
+
       await game.saveGameState();
 
       if (game.state.status === 'OVER') {

@@ -30,8 +30,8 @@ const useGamePage = () => {
     // emit a 'leaveGame' event to the server using the socket.
     if (joinedGameID && gameState?.state.status !== 'OVER') {
       try {
-        if (!user._id) throw new Error('Error when fetching user id.');
-        const leaveGameState = await leaveGame(joinedGameID, user._id);
+        if (!user.username) throw new Error('Error when fetching user id.');
+        const leaveGameState = await leaveGame(joinedGameID, user.username);
         socket?.emit('leaveGame', joinedGameID);
         setGameState(leaveGameState);
         setJoinedGameID(null);
@@ -51,8 +51,8 @@ const useGamePage = () => {
       // making an API call, emitting a 'joinGame' event to the server using the socket,
       // and setting apporoiate state variables.
       try {
-        if (!user._id) throw new Error('Error when fetching user id.');
-        const joinGameState = await joinGame(id, user._id);
+        if (!user.username) throw new Error('Error when fetching username.');
+        const joinGameState = await joinGame(id, user.username);
         socket?.emit('joinGame', id);
         setGameState(joinGameState);
         setJoinedGameID(id);
@@ -89,7 +89,7 @@ const useGamePage = () => {
       socket?.off('gameUpdate', handleGameUpdate);
       socket?.off('gameError', handleGameError);
     };
-  }, [gameID, socket, user.username, gameState, joinedGameID, user._id]);
+  }, [gameID, socket, user.username, gameState, joinedGameID]);
 
   return {
     gameState,

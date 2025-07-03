@@ -75,8 +75,8 @@ const useAuth = (authType: 'login' | 'signup') => {
       setErr('Please enter password');
       return false;
     }
-    if (authType === 'signup' && !passwordConfirmation) {
-      setErr('Password donot match.');
+    if (authType === 'signup' && (!passwordConfirmation || password !== passwordConfirmation)) {
+      setErr('Password donot match! Try again');
       return false;
     }
     setErr('');
