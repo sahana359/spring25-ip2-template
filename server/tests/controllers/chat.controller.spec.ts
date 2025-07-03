@@ -111,7 +111,7 @@ describe('Chat Controller', () => {
       const response = await supertest(app).post('/chat/createChat').send(validPayload);
 
       expect(response.status).toBe(500);
-      expect(response.text).toMatch(/Error when saving chat: Failed to save chat/);
+      expect(response.text).toMatch('Error when saving chat: Failed to save chat');
     });
   });
 
@@ -367,12 +367,16 @@ describe('Chat Controller', () => {
       const chatId = new mongoose.Types.ObjectId().toString();
       const participantId = new mongoose.Types.ObjectId().toString();
 
+      jest
+        .spyOn(chatService, 'addParticipantToChat')
+        .mockRejectedValueOnce(new Error('DB failure'));
+
       const response = await supertest(app)
         .post(`/chat/${chatId}/addParticipant`)
         .send({ participant: participantId });
 
       expect(response.status).toBe(500);
-      expect(response.text).toMatch(/Error when adding answer: DB failure/);
+      expect(response.text).toMatch('Error when adding answer: DB failure');
     });
   });
 

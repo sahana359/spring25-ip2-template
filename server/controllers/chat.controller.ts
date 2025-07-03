@@ -253,6 +253,7 @@ const chatController = (socket: FakeSOSocket) => {
     try {
       const chat = await addParticipantToChat(chatId.toString(), participant.toString());
       if (!chat) throw new Error('Error when adding participants to chat');
+      if (chat && 'error' in chat) throw new Error(chat.error);
       res.status(200).json(chat);
     } catch (err) {
       res.status(500).send(`Error when adding answer: ${(err as Error).message}`);
